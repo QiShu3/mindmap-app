@@ -144,7 +144,7 @@ export const EditorPage: React.FC = () => {
           setEdges(project.edges || []);
         } else {
           // 项目不存在，返回项目列表
-          navigate('/');
+          navigate('/projects');
         }
       };
       loadProject();
@@ -333,7 +333,7 @@ export const EditorPage: React.FC = () => {
       <div className="h-20 bg-white/80 backdrop-blur-sm border-b border-gray-200/50 flex items-center justify-between px-8 shadow-sm">
         <div className="flex items-center space-x-6">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/projects')}
             className="flex items-center px-4 py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
           >
             <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform duration-200" />

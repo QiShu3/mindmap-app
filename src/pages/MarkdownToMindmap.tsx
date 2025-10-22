@@ -5,8 +5,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Transformer } from 'markmap-lib';
 import { Markmap, loadCSS, loadJS } from 'markmap-view';
-import { FileText, Download, Copy, RotateCcw, ArrowLeft, Trash2 } from 'lucide-react';
+import { FileText, Download, Copy, RotateCcw, ArrowLeft, Trash2, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import MarkdownSidebar from '../components/MarkdownSidebar';
+import { MarkdownFile } from '../utils/markdownStorage';
 
 /**
  * 默认示例 Markdown 内容
@@ -83,6 +85,7 @@ const MarkdownToMindmap: React.FC = () => {
   });
   
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const mmRef = useRef<Markmap | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -180,6 +183,29 @@ const MarkdownToMindmap: React.FC = () => {
   };
 
   /**
+   * 处理文件选择
+   */
+  const handleFileSelect = (content: string) => {
+    setMarkdown(content);
+    saveToLocalStorage(content);
+  };
+
+  /**
+   * 处理文件保存
+   */
+  const handleFileSave = (file: MarkdownFile) => {
+    // 可以在这里添加保存成功的提示
+    console.log('文件保存成功:', file.name);
+  };
+
+  /**
+   * 切换侧拉栏显示状态
+   */
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  /**
    * 导出 SVG
    */
   const exportSVG = () => {
@@ -221,6 +247,30 @@ const MarkdownToMindmap: React.FC = () => {
     };
   }, []);
 
+  // 键盘快捷键支持
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + B 切换侧拉栏
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+      // Ctrl/Cmd + S 保存当前内容
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        // 这里可以触发保存操作
+        console.log('快捷键保存');
+      }
+      // ESC 关闭侧拉栏
+      if (e.key === 'Escape' && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isSidebarOpen]);
+
   return (
     <div className="h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex flex-col">
       {/* 头部工具栏 */}
@@ -234,6 +284,14 @@ const MarkdownToMindmap: React.FC = () => {
             >
               <ArrowLeft className="w-4 h-4" />
               返回
+            </button>
+            <button
+              onClick={toggleSidebar}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              title="文件管理 (Ctrl/Cmd + B)"
+            >
+              <Menu className="w-4 h-4" />
+              文件
             </button>
             <div className="flex items-center gap-2">
               <FileText className="w-6 h-6 text-purple-600" />
@@ -338,6 +396,15 @@ const MarkdownToMindmap: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 侧拉栏 */}
+      <MarkdownSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        currentContent={markdown}
+        onFileSelect={handleFileSelect}
+        onFileSave={handleFileSave}
+      />
     </div>
   );
 };
